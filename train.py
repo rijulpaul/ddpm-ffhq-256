@@ -24,7 +24,7 @@ if __name__ == "__main__":
     if args.dataset:
         config.data_dir = args.dataset
 
-    if not args.upload_to_hf or not args.repo_id:
+    if bool(args.upload_to_hf) != bool(args.repo_id):
         raise ValueError("Uploading to HuggingFace requires both --upload-to-hf and --repo-id")
     else:
         config.upload_to_hf = True
