@@ -1,8 +1,9 @@
-torch==2.11.0
-torchvision==0.26.0
-diffusers==0.37.1
+torch
+torchvision
+diffusers
 datasets
 bitsandbytes
 kagglehub
+huggingface_hub
 dotenv
 tqdm
