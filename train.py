@@ -1,0 +1,28 @@
+import argparse
+from src.config import TrainingConfig
+from src.train import train
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train DDPM model")
+
+    parser.add_argument("--dataset", type=str, default=None, help="Path to dataset")
+    parser.add_argument("--output", type=str, default=None, help="Checkpoint/output directory")
+    parser.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint to resume from")
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    config = TrainingConfig()
+
+    # Override only if provided
+    if args.data_path:
+        config.data_dir = args.dataset
+
+    if args.output_dir:
+        config.output_dir = args.output
+
+    train(config, checkpoint = args.checkpoint)
