@@ -25,4 +25,4 @@ if __name__ == "__main__":
     if args.output:
         config.output_dir = args.output
 
-    train(config, checkpoint = args.checkpoint)
+    train(config, checkpoint_path = args.checkpoint)
