@@ -75,38 +75,39 @@ def train(config, checkpoint_path):
                 noise_pred = model(noisy_images, timesteps).sample
                 loss = F.mse_loss(noise_pred, noise)
 
-
-            # ===== NaN / Inf guard =====
+            # ===== Skip early if bad loss =====
             if not torch.isfinite(loss):
                 print(f"Skipping step {step} due to invalid loss")
                 continue
-
+            
             scaler.scale(loss).backward()
-
-            # ===== Unscale before clipping =====
-            scaler.unscale_(optimizer)
-
-            # ===== Check if gradients exist =====
+            
+            # ===== Check gradients BEFORE unscale =====
             has_grad = False
             for p in model.parameters():
                 if p.grad is not None:
                     has_grad = True
                     break
-
+            
             if not has_grad:
                 print(f"Skipping step {step} (no gradients)")
+                scaler.update()   # ✅ keep scaler in sync
                 continue
-
+            
+            # ===== Now safe to unscale =====
+            scaler.unscale_(optimizer)
+            
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-
-            # ===== Safe optimizer step =====
+            
+            # ===== Safe step =====
             try:
                 scaler.step(optimizer)
-                scaler.update()
             except AssertionError:
                 print(f"Skipping step {step} due to AMP issue")
+                scaler.update()
                 continue
-
+            
+            scaler.update()
             lr_scheduler.step()
             ema.update(model)
 
