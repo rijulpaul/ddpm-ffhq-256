@@ -26,7 +26,7 @@ def get_model(config, state_dict=None):
     )
 
     if state_dict is not None:
-        model.load_state_dict(state_dict, weights_only=False)
+        model.load_state_dict(state_dict)
     model = model.to(config.device)
 
     model = torch.compile(model)

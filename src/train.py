@@ -34,7 +34,7 @@ def train(config, checkpoint_path):
     scaler = torch.amp.GradScaler("cuda")
 
     if checkpoint_path:
-        checkpoint = torch.load(checkpoint_path, map_location=config.device)
+        checkpoint = torch.load(checkpoint_path, map_location=config.device, weights_only=False)
 
         state_dict = checkpoint["model"]
 
