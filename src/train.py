@@ -48,7 +48,7 @@ def train(config, checkpoint_path):
 
         ema.shadow = checkpoint["ema"]
 
-        scaler.load_state_dict(checkpoint["scaler"])
+        # scaler.load_state_dict(checkpoint["scaler"])
 
         start_epoch = checkpoint["epoch"] + 1
 
@@ -111,7 +111,7 @@ def train(config, checkpoint_path):
                     "optimizer": optimizer.state_dict(),
                     "lr_scheduler": lr_scheduler.state_dict(),
                     "ema": ema.shadow,
-                    "scaler": scaler.state_dict(),
+                    # "scaler": scaler.state_dict(),
                     "epoch": epoch,
                 },
                 f"{config.output_dir}/checkpoint.pt",
