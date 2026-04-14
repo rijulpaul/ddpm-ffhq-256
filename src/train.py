@@ -36,7 +36,13 @@ def train(config, checkpoint_path):
     if checkpoint_path:
         checkpoint = torch.load(checkpoint_path, map_location=config.device)
 
-        model = get_model(config,checkpoint["model"])
+        state_dict = checkpoint["model"]
+
+        # Fix compiled model keys
+        if list(state_dict.keys())[0].startswith("_orig_mod."):
+            state_dict = {k.replace("_orig_mod.", ""): v for k, v in state_dict.items()}
+
+        model = get_model(config,state_dict)
         optimizer.load_state_dict(checkpoint["optimizer"])
         lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
 
