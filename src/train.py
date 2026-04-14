@@ -21,13 +21,17 @@ def train(config, checkpoint_path):
     model = get_model(config)
     ema = EMA(model)
     noise_scheduler = get_noise_scheduler()
-    optimizer = bnb.optim.AdamW8bit(model.parameters(), lr=config.learning_rate)
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=config.learning_rate,
+        betas=(0.9, 0.999),
+        weight_decay=1e-4
+    )
     lr_scheduler = get_cosine_schedule_with_warmup(
         optimizer,
         num_warmup_steps=config.lr_warmup_steps,
         num_training_steps=len(dataloader) * config.num_epochs,
     )
-    scaler = torch.amp.GradScaler("cuda")
 
     if checkpoint_path:
         checkpoint = torch.load(checkpoint_path, map_location=config.device, weights_only=False)
@@ -71,43 +75,19 @@ def train(config, checkpoint_path):
 
             optimizer.zero_grad()
 
-            with torch.amp.autocast("cuda"):
+            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                 noise_pred = model(noisy_images, timesteps).sample
                 loss = F.mse_loss(noise_pred, noise)
 
-            # ===== Skip early if bad loss =====
             if not torch.isfinite(loss):
                 print(f"Skipping step {step} due to invalid loss")
                 continue
             
-            scaler.scale(loss).backward()
-            
-            # ===== Check gradients BEFORE unscale =====
-            has_grad = False
-            for p in model.parameters():
-                if p.grad is not None:
-                    has_grad = True
-                    break
-            
-            if not has_grad:
-                print(f"Skipping step {step} (no gradients)")
-                scaler.update()   # ✅ keep scaler in sync
-                continue
-            
-            # ===== Now safe to unscale =====
-            scaler.unscale_(optimizer)
-            
+            loss.backward()
+
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            
-            # ===== Safe step =====
-            try:
-                scaler.step(optimizer)
-            except AssertionError:
-                print(f"Skipping step {step} due to AMP issue")
-                scaler.update()
-                continue
-            
-            scaler.update()
+
+            optimizer.step()
             lr_scheduler.step()
             ema.update(model)
 
