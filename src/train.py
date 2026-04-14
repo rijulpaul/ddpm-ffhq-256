@@ -36,7 +36,7 @@ def train(config, checkpoint_path):
     if checkpoint_path:
         checkpoint = torch.load(checkpoint_path, map_location=config.device)
 
-        model.load_state_dict(checkpoint["model"])
+        model = get_model(config,checkpoint["model"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
 
