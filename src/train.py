@@ -103,6 +103,7 @@ def train(config, checkpoint_path):
         if epoch % config.save_model_epochs == 0:
             os.makedirs(config.output_dir, exist_ok=True)
 
+            ema.apply_shadow(model)
             torch.save(
                 {
                     "model": model.state_dict(),
@@ -113,6 +114,7 @@ def train(config, checkpoint_path):
                 },
                 f"{config.output_dir}/checkpoint.pt",
             )
+            ema.restore(model)
 
             pipeline.save_pretrained(f"{config.output_dir}/pipeline")
 
