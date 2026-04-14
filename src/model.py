@@ -29,10 +29,5 @@ def get_model(config):
 
     model = model.to(config.device)
 
-    try:
-        model.enable_xformers_memory_efficient_attention()
-    except:
-        pass
-
     model = torch.compile(model)
     return model
