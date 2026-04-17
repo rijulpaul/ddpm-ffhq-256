@@ -41,7 +41,7 @@ def get_dataloader(config):
         [
             transforms.Resize((config.image_size, config.image_size)),
             transforms.ToTensor(),
-            transforms.Normalize([0.5], [0.5]),
+            transforms.Normalize([0.5,0.5,0.5], [0.5,0.5,0.5]),
         ]
     )
 
