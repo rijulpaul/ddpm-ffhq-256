@@ -5,10 +5,7 @@ from diffusers.utils import make_image_grid
 
 def evaluate(config, epoch, pipeline, model, ema):
     ema.apply_shadow(model)
-
-    pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
-        pipeline.scheduler.config
-    )
+    model.eval()
 
     pipeline.set_progress_bar_config(disable=True)
 
@@ -16,7 +13,7 @@ def evaluate(config, epoch, pipeline, model, ema):
 
     images = pipeline(
         batch_size=config.eval_batch_size,
-        num_inference_steps=50,
+        num_inference_steps=1000,
         generator=torch.Generator(device=config.device).manual_seed(42),
     ).images
 
