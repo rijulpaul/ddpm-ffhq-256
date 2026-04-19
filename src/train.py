@@ -56,6 +56,9 @@ def train(config, checkpoint_path):
         print(f"Continuing training from checkpoint: Epoch {start_epoch}")
 
     for epoch in range(start_epoch, config.num_epochs):
+
+        model.train()
+        
         progress_bar = tqdm(
             dataloader,
             desc=f"Epoch {epoch}",
@@ -83,10 +86,14 @@ def train(config, checkpoint_path):
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                 noise_pred = model(noisy_images, timesteps).sample
                 loss = F.mse_loss(noise_pred, noise)
-
+        
             if not torch.isfinite(loss):
                 print(f"Skipping step {step} due to invalid loss")
                 continue
+            
+            progress_bar.set_postfix({
+                "loss": loss.item()
+            })
             
             loss.backward()
 
@@ -104,7 +111,7 @@ def train(config, checkpoint_path):
             evaluate(config, epoch, pipeline, model, ema)
 
             if (config.upload_to_hf):
-                upload_to_hf(config.repo_id,config.output_dir, commit_msg=f"Evaluation Images: Epoch :{epoch}")
+                upload_to_hf(config.repo_id,config.output_dir, commit_msg=f"Evaluation Images: Epoch {epoch}")
 
         if epoch % config.save_model_epochs == 0:
             os.makedirs(config.output_dir, exist_ok=True)
