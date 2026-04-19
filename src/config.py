@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class TrainingConfig:
     image_size = 128
-    batch_size = 32
+    batch_size = 64
     eval_batch_size = 8
     num_epochs = 300
     gradient_accumulation_steps = 1
