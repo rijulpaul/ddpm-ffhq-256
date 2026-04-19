@@ -6,10 +6,10 @@ class TrainingConfig:
     image_size = 128
     batch_size = 32
     eval_batch_size = 8
-    num_epochs = 350
+    num_epochs = 300
     gradient_accumulation_steps = 1
     learning_rate = 1e-4
-    lr_warmup_steps = 500
+    lr_warmup_steps = 2000
     save_image_epochs = 10
     save_model_epochs = 2
     mixed_precision = "fp16"
